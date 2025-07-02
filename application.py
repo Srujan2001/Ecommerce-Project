@@ -11,27 +11,14 @@ import pdfkit
 import re
 client = razorpay.Client(auth=("rzp_test_IVOKUPstFIL8G6","zYUIj2q4pGFSSGwtxPb4PABE"))
 application=Flask(__name__)
-# mydb=mysql.connector.connect(user='root',host='localhost',password='admin',db='ecommerce')
-# config=pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
+mydb=mysql.connector.connect(user='root',host='localhost',password='admin',db='ecommerce')
+config=pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
 application.secret_key='codegnan2025'
 application.config['SESSION_TYPE']='filesystem'
 Session(application)
 
 
-user=os.environ.get('RDS_USERNAME')
-db=os.environ.get('RDS_DB_NAME')
-passwd=os.environ.get('RDS_PASSWORD')
-port=os.environ.get('RDS_PORT')
-host=os.environ.get('RDS_HOSTNAME')
-with mysql.connector.connect(user=user,port=port,db=db,password=passwd,host=host) as conn:
-    cursor=conn.cursor()
-    cursor.excute("CREATE TABLE if not exists admin_details(admin_username varchar(30) NOT NULL,admin_email varchar(50) NOT NULL,admin_password varbinary(255) DEFAULT NULL,created_at datetime DEFAULT CURRENT_TIMESTAMP,address text,PRIMARY KEY (admin_email),UNIQUE KEY admin_email (admin_email) )")
-    cursor.execute(" CREATE TABLE if not exists items (itemid binary(16) NOT NULL,item_name mediumtext NOT NULL,description longtext NOT NULL,item_cost decimal(20,4) NOT NULL,tem_quantity tinyint unsigned NOT NULL,item_category enum('Home applicances','Electronics','sports','Fashion','Grocery') DEFAULT NULL,created_at datetime DEFAULT CURRENT_TIMESTAMP,added_by varchar(50) DEFAULT NULL,imgname varchar(20) DEFAULT NULL,PRIMARY KEY (itemid),KEY item_addedby (added_by),CONSTRAINT item_addedby FOREIGN KEY (added_by) REFERENCES admin_details (admin_email)) ")
-    cursor.execute("CREATE TABLE if not exists users (useremail varchar(30) NOT NULL,username varchar(30) NOT NULL,password varchar(255) DEFAULT NULL,address text NOT NULL,created_at datetime DEFAULT CURRENT_TIMESTAMP,gender enum('male','female','others') DEFAULT NULL,PRIMARY KEY (useremail)) ")
-    cursor.execute(" CREATE TABLE if not exists reviews(r_id int unsigned NOT NULL AUTO_INCREMENT,review_text text,create_at datetime DEFAULT CURRENT_TIMESTAMP,itemid binary(16) DEFAULT NULL,added_by varchar(30) DEFAULT NULL,rating enum('1','2','3','4','5') DEFAULT NULL,PRIMARY KEY (r_id),KEY itemid (itemid),KEY added_by (added_by),CONSTRAINT reviews_ibfk_1 FOREIGN KEY (itemid) REFERENCES items (itemid) ON DELETE SET NULL ON UPDATE CASCADE,CONSTRAINT reviews_ibfk_2 FOREIGN KEY (added_by) REFERENCES users (useremail) ON DELETE SET NULL ON UPDATE CASCADE)")
-    cursor.execute("CREATE TABLE  if not exists orders(order_id int unsigned NOT NULL AUTO_INCREMENT,item_id binary(16) DEFAULT NULL,item_name varchar(50) DEFAULT NULL,total decimal(20,4) DEFAULT NULL,payment_by varchar(30) DEFAULT NULL,PRIMARY KEY (order_id),KEY item_id (item_id),KEY payment_by (payment_by),KEY item_id (item_id),CONSTRAINT orders_ibfk_1 FOREIGN KEY (payment_by) REFERENCES users (useremail) ON DELETE SET NULL ON UPDATE CASCADE,CONSTRAINT orders_ibfk_2 FOREIGN KEY (item_id) REFERENCES items (itemid) ON UPDATE CASCADE)")
-mydb=mysql.connector.connect(user=user,port=port,db=db,password=passwd,host=host)
-session=Session(app)
+
 
 
 
@@ -153,6 +140,118 @@ def adminlogin():
                     flash(f'password wrong')
 
     return render_template('adminlogin.html')
+
+
+
+@application.route('/adminforgot', methods=['GET', 'POST'])
+def adminforgot():
+    if request.method == 'POST':
+        email = request.form['email']
+        try:
+            cursor = mydb.cursor()
+            cursor.execute("SELECT COUNT(*) FROM admin_details WHERE admin_email=%s", [email])
+            admin_count = cursor.fetchone()[0]
+        except Exception as e:
+            print(f"Error: {e}")
+            flash("Error connecting to database.")
+            return redirect(url_for('adminforgot'))
+        
+        if admin_count == 1:
+            otp = genotp()
+            session['admin_reset_otp'] = otp
+            session['admin_reset_email'] = email
+            send_mail(
+                to=email,
+                subject="Admin Password Reset OTP",
+                body=f"Your OTP to reset your admin password is: {otp}"
+            )
+            flash(f"An OTP has been sent to {email}")
+            return redirect(url_for('admin_verify_reset_otp'))
+        else:
+            flash("Email not found.")
+            return redirect(url_for('adminforgot'))
+    return render_template('adminforgotpassword.html')
+
+@application.route('/admin_verify_reset_otp', methods=['GET', 'POST'])
+def admin_verify_reset_otp():
+    if request.method == 'POST':
+        user_otp = request.form['otp']
+        if session.get('admin_reset_otp') == user_otp:
+            flash("OTP verified. Set new password.")
+            return redirect(url_for('admin_newpassword'))
+        else:
+            flash("Invalid OTP.")
+            return redirect(url_for('admin_verify_reset_otp'))
+    return render_template("admin_verify_reset_otp.html")
+
+@application.route('/admin_newpassword', methods=['GET', 'POST'])
+def admin_newpassword():
+    if request.method == 'POST':
+        newpass = request.form['password']
+        confirmpass = request.form['confirmpassword']
+
+        if newpass != confirmpass:
+            flash("Passwords do not match.")
+            return redirect(url_for('admin_newpassword'))
+
+        try:
+            hashed = bcrypt.hashpw(newpass.encode(), bcrypt.gensalt())
+            cursor = mydb.cursor()
+            cursor.execute("UPDATE admin_details SET admin_password = %s WHERE admin_email = %s", 
+                           [hashed, session['admin_reset_email']])
+            mydb.commit()
+            cursor.close()
+
+            flash("Password updated successfully. Please login.")
+            session.pop('admin_reset_email', None)
+            session.pop('admin_reset_otp', None)
+            return redirect(url_for('adminlogin'))
+
+        except Exception as e:
+            print("Error:", e)
+            flash("Failed to update password.")
+            return redirect(url_for('admin_newpassword'))
+
+    return render_template("admin_newpassword.html")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @application.route('/adminpanel',methods=['GET','POSt'])
 def adminpanel():
