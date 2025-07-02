@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Review</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(270deg, #ffecd2, #fcb69f, #ffecd2);
+      background-size: 600% 600%;
+      animation: animatedBackground 10s ease infinite, fadeInBody 1s ease;
+    }
+
+    @keyframes animatedBackground {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes fadeInBody {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 5% auto;
+      background: #fff;
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+      animation: fadeInUp 1.2s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin: 18px 0 8px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus, textarea:focus {
+      border-color: #ff4b2b;
+      box-shadow: 0 0 12px rgba(255, 75, 43, 0.4);
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+    }
+
+    .rate {
+      display: flex;
+      justify-content: start;
+      gap: 10px;
+      margin-top: 18px;
+      flex-direction: row-reverse;
+    }
+
+    .rate input {
+      display: none;
+    }
+
+    .rate label {
+      font-size: 2rem;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.3s ease, transform 0.2s ease;
+      transform-origin: center;
+    }
+
+    .rate input:checked ~ label,
+    .rate label:hover,
+    .rate label:hover ~ label {
+      color: #f8b500;
+    }
+
+    .rate label:hover {
+      transform: scale(1.2);
+    }
+
+    .button-52 {
+      margin-top: 25px;
+      font-size: 1rem;
+      padding: 14px 32px;
+      color: #fff;
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
+      animation: bounceIn 1s ease;
+    }
+
+    .button-52:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(255, 75, 43, 0.6);
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .home-link {
+      text-align: center;
+      margin-top: 25px;
+    }
+
+    .home-link a {
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 12% 20px;
+        padding: 25px;
+      }
+      .button-52 {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <form method="POST">
+      <label for="title">Review Title</label>
+      <input type="text" name="title" id="title" required>
+
+      <label for="review">Review Description</label>
+      <textarea name="review" id="review" required></textarea>
+
+      <label><strong>Rate this product:</strong></label>
+      <div class="rate">
+        <input type="radio" id="star5" name="rate" value="5"><label for="star5" title="5 stars">★</label>
+        <input type="radio" id="star4" name="rate" value="4"><label for="star4" title="4 stars">★</label>
+        <input type="radio" id="star3" name="rate" value="3"><label for="star3" title="3 stars">★</label>
+        <input type="radio" id="star2" name="rate" value="2"><label for="star2" title="2 stars">★</label>
+        <input type="radio" id="star1" name="rate" value="1" required><label for="star1" title="1 star">★</label>
+      </div>
+
+      <center>
+        <button type="submit" class="button-52">Submit Review</button>
+      </center>
+    </form>
+  </div>
+</body>
+</html>

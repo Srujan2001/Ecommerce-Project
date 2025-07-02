@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View All</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1534850336045-c6c6d287f89e');
+            background-repeat: no-repeat;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #title {
+            color: #e7e718;
+            margin-bottom: 40px;
+        }
+
+        .card-img-top {
+            height: 200px;
+            object-fit: contain;
+            background-color: #fff;
+        }
+
+        .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .button {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .card-title {
+            font-weight: bold;
+        }
+
+        .card-cost {
+            color: green;
+        }
+
+        .card-id {
+            font-size: 0.8rem;
+            color: gray;
+        }
+
+        h2.title {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+        <h2 id="title">All Items</h2>
+    </center>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-info text-center">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for i in itemsdata %}
+            <div class="col">
+                <div class="card shadow">
+                    <img src="/static/{{ i[3] }}" class="card-img-top" alt="{{ i[1] }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ i[1] }}</h5>
+                        <div class="card-id">{{ i[0] }}</div>
+                        <div class="card-cost">₹{{ i[2] }}</div>
+                        <div class="button">
+                            <a href="{{url_for('view_item',itemid=i[0])}}"><button class="btn btn-warning btn-sm">View</button></a>
+                            <a href="{{url_for('updateitem',itemid=i[0])}}"><button class="btn btn-success btn-sm">Update</button></a>
+                            <a href="{{url_for('deleteitem',itemid=i[0])}}"><button class="btn btn-danger btn-sm">Delete</button></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

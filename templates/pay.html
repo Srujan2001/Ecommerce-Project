@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pay with Razorpay</title>
+
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #232526, #414345);
+      color: #fff;
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .container {
+      background: #1f1f1f;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      animation: fadeInUp 1s ease-in-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    #rzp-button1 {
+      padding: 12px 30px;
+      font-size: 1rem;
+      color: #fff;
+      background: #00b09b;
+      background: linear-gradient(to right, #00b09b, #96c93d);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #rzp-button1:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .logo {
+      width: 60px;
+      margin-bottom: 15px;
+      border-radius: 999%;
+      animation: spin 5s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container animate__animated animate__zoomIn">
+    <img src="/static/images.jpeg" alt="Logo" class="logo">
+    <h2>Pay for <strong>{{ name }}</strong> - ₹{{ total_amount / 100 }}</h2>
+    <button id="rzp-button1">Pay Now</button>
+  </div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    var options = {
+      "key": "rzp_test_IVOKUPstFIL8G6",
+      "amount": "{{ order.amount }}",
+      "currency": "INR",
+      "name": "{{ name }}",
+      "description": "Test Transaction",
+      "image": "/static/images.jpeg",
+      "order_id": "{{ order.id }}",
+      "handler": function (response) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/success';
+        form.innerHTML = `
+          <input type="hidden" name="razorpay_payment_id" value="${response.razorpay_payment_id}">
+          <input type="hidden" name="razorpay_order_id" value="${response.razorpay_order_id}">
+          <input type="hidden" name="razorpay_signature" value="${response.razorpay_signature}">
+          <input type="hidden" name="name" value="{{name}}">
+          <input type="hidden" name="total_price" value="{{total_amount}}">
+          <input type="hidden" name="itemid" value="{{itemid}}">
+          <input type="hidden" name="qyt" value="{{qyt}}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+      },
+      "prefill": {
+        "name": "Test User",
+        "email": "{{ session.get('user') }}",
+        "contact": "9999999999"
+      },
+      "theme": {
+        "color": "#00b09b"
+      }
+    };
+
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button1').onclick = function (e) {
+      rzp1.open();
+      e.preventDefault();
+    };
+  </script>
+</body>
+</html>
