@@ -1,74 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Create</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Registration</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
   <style>
-    ul {
-      list-style: none;
-      padding: 0;
+    body {
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .form-container {
+      animation: slideDown 0.6s ease-out;
+      background-color: rgba(0, 0, 0, 0.85);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+      padding: 2rem;
+      border-radius: 1rem;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .form-control:focus {
+      border-color: #00ffff;
+      box-shadow: 0 0 10px #00ffff;
     }
 
     .valid {
-      color: limegreen;
+      color: #00ff88;
+      transition: 0.3s;
     }
 
     .invalid {
-      color: crimson;
+      color: #ff4c4c;
+      transition: 0.3s;
     }
 
-    body {
-      background-color: #000;
+    ul.validation-list {
+      list-style: none;
+      padding-left: 0;
+      font-size: 0.9rem;
+    }
+
+    button:disabled {
+      background: #444;
+      border: none;
+    }
+
+    .btn-primary {
+      background-color: #00bcd4;
+      border: none;
+      transition: 0.3s;
+    }
+
+    .btn-primary:hover {
+      background-color: #0097a7;
+      box-shadow: 0 0 10px #00e1ff;
     }
   </style>
 </head>
-
 <body>
-  <div class="container d-flex justify-content-center align-items-start min-vh-100 pt-5">
-    <form method="post" action="{{url_for('admincreate')}}" class="bg-dark text-light p-4 border border-light rounded" style="width: 100%; max-width: 450px;">
+  <div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <form method="post" action="{{ url_for('admincreate') }}" class="form-container">
       <h3 class="text-center mb-4">Admin Registration</h3>
 
       {% with messages = get_flashed_messages() %}
-      {% if messages %}
-      {% for message in messages %}
-      <div class="alert alert-warning text-center">{{ message }}</div>
-      {% endfor %}
-      {% endif %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-warning text-center">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
       {% endwith %}
 
       <div class="mb-3">
-        <label class="form-label">Name</label>
-        <input type="text" class="form-control" name="username" required>
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-control" name="username" required />
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-control" name="email" required>
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-control" name="email" required />
       </div>
 
       <div class="mb-3">
         <label class="form-label">Phone Number</label>
-        <input type="number" class="form-control" name="phone" required>
+        <input type="number" class="form-control" name="phone" required />
       </div>
-      
+
       <div class="mb-3">
         <label class="form-label">Password</label>
-        <input type="password" class="form-control" id="password" name="password" oninput="validatePassword()" placeholder="Enter password" required>
+        <input type="password" class="form-control" id="password" name="password" oninput="validatePassword()" required />
       </div>
 
       <div class="mb-3">
         <label class="form-label">Confirm Password</label>
-        <input type="password" class="form-control" id="confirmPassword" name="password" oninput="checkConfirmPassword()" placeholder="Re-enter password" required>
+        <input type="password" class="form-control" id="confirmPassword" name="password" oninput="checkConfirmPassword()" required />
       </div>
 
-      <ul class="mb-3">
+      <ul class="validation-list mb-3">
         <li id="length" class="invalid">✔ At least 8 characters</li>
-        <li id="uppercase" class="invalid">✔ At least one uppercase letter (A-Z)</li>
-        <li id="number" class="invalid">✔ At least one number (0-9)</li>
-        <li id="symbol" class="invalid">✔ At least one symbol (!@#$%^&*)</li>
+        <li id="uppercase" class="invalid">✔ One uppercase letter</li>
+        <li id="number" class="invalid">✔ One number</li>
+        <li id="symbol" class="invalid">✔ One special character</li>
         <li id="match" class="invalid">✔ Passwords match</li>
       </ul>
 
@@ -79,27 +125,28 @@
 
       <div class="mb-3">
         <label class="form-label">Address</label>
-        <input type="text" class="form-control" name="address" required>
+        <input type="text" class="form-control" name="address" required />
       </div>
 
-      <div class="form-check mb-3">
+      <div class="form-check mb-4">
         <input type="checkbox" class="form-check-input" name="agree" id="agreeCheck" required>
-        <label class="form-check-label" for="agreeCheck">Agree to terms</label>
+        <label class="form-check-label" for="agreeCheck">I agree to the terms</label>
       </div>
 
       <div class="d-grid">
-        <button type="submit" id="submitBtn" class="btn btn-primary" disabled>Submit</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>Register</button>
       </div>
     </form>
   </div>
 
   <script>
-    const showPasswordCheckbox = document.getElementById('showPassword');
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirmPassword');
+    const showPasswordCheckbox = document.getElementById('showPassword');
+    const submitBtn = document.getElementById('submitBtn');
 
-    showPasswordCheckbox.addEventListener('change', function () {
-      const type = this.checked ? 'text' : 'password';
+    showPasswordCheckbox.addEventListener('change', () => {
+      const type = showPasswordCheckbox.checked ? 'text' : 'password';
       passwordInput.type = type;
       confirmPasswordInput.type = type;
     });
@@ -111,10 +158,10 @@
       const hasNumber = /[0-9]/.test(password);
       const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-      document.getElementById("length").className = hasLength ? "valid" : "invalid";
-      document.getElementById("uppercase").className = hasUppercase ? "valid" : "invalid";
-      document.getElementById("number").className = hasNumber ? "valid" : "invalid";
-      document.getElementById("symbol").className = hasSymbol ? "valid" : "invalid";
+      document.getElementById('length').className = hasLength ? 'valid' : 'invalid';
+      document.getElementById('uppercase').className = hasUppercase ? 'valid' : 'invalid';
+      document.getElementById('number').className = hasNumber ? 'valid' : 'invalid';
+      document.getElementById('symbol').className = hasSymbol ? 'valid' : 'invalid';
 
       checkConfirmPassword();
     }
@@ -122,16 +169,15 @@
     function checkConfirmPassword() {
       const password = passwordInput.value;
       const confirmPassword = confirmPasswordInput.value;
-      const match = password === confirmPassword && password !== "";
+      const isMatch = password && password === confirmPassword;
 
-      document.getElementById("match").className = match ? "valid" : "invalid";
+      document.getElementById('match').className = isMatch ? 'valid' : 'invalid';
 
-      const allValid = [...document.querySelectorAll("li")].every(li => li.classList.contains("valid"));
-      document.getElementById("submitBtn").disabled = !allValid;
+      const allValid = [...document.querySelectorAll("ul.validation-list li")].every(li => li.classList.contains('valid'));
+      submitBtn.disabled = !allValid;
     }
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

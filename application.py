@@ -9,6 +9,7 @@ import os
 import razorpay
 import pdfkit
 import re
+import uuid
 client = razorpay.Client(auth=("rzp_test_IVOKUPstFIL8G6","zYUIj2q4pGFSSGwtxPb4PABE"))
 application=Flask(__name__)
 mydb=mysql.connector.connect(user='root',host='localhost',password='admin',db='ecommerce')
@@ -19,15 +20,128 @@ Session(application)
 
 
 
+# Only this email is allowed to confirm or reject
+
+AUTHORIZED_EMAIL = 'srujanravuri2001@gmail.com'
+pending_admins = {}
+
+@application.route('/admincreate', methods=['GET', 'POST'])
+def admincreate():
+    if request.method == 'POST':
+        username = request.form['username']
+        useremail = request.form['email']
+        raw_password = request.form['password']
+        address = request.form['address']
+        agreed = request.form.get('agree')
+
+        try:
+            cursor = mydb.cursor(buffered=True)
+            cursor.execute('SELECT COUNT(*) FROM admin_details WHERE admin_email=%s', [useremail])
+            email_count = cursor.fetchone()[0]
+        except Exception as e:
+            print(f'Error: {e}')
+            flash('Could not fetch data. Please try again.')
+            return redirect(url_for('admincreate'))
+
+        if email_count == 0:
+            # Hash password using bcrypt
+            hashed_password = bcrypt.hashpw(raw_password.encode(), bcrypt.gensalt())
+
+            token = str(uuid.uuid4())
+            admindata = {
+                'username': username,
+                'email': useremail,
+                'password': hashed_password,  # Store as bytes for VARBINARY
+                'address': address
+            }
+            pending_admins[token] = admindata
+
+            confirm_url = url_for('admin_confirm', token=token, _external=True)
+            reject_url = url_for('admin_reject', token=token, _external=True)
+
+            subject = 'Admin Registration Approval Needed'
+            body = f'''
+Hello Admin,
+
+A new admin registration request has been submitted.
+
+Name: {username}
+Email: {useremail}
+Address: {address}
+
+Click to APPROVE: ✅ {confirm_url}
+Click to REJECT: ❌ {reject_url}
+            '''
+            send_mail(to=AUTHORIZED_EMAIL, subject=subject, body=body)
+            flash("A confirmation email has been sent to the authorized admin for approval.")
+            return redirect(url_for('adminlogin'))
+        else:
+            flash(f'Email already exists: {useremail}')
+            return redirect(url_for('admincreate'))
+
+    return render_template('admincreate.html')
+
+
+@application.route('/admin_confirm/<token>')
+def admin_confirm(token):
+    data = pending_admins.pop(token, None)
+    if data:
+        try:
+            cursor = mydb.cursor()
+            cursor.execute(
+                "INSERT INTO admin_details (admin_username, admin_email, admin_password, address) VALUES (%s, %s, %s, %s)",
+                [data['username'], data['email'], data['password'], data['address']]
+            )
+            mydb.commit()
+
+            # Send approval mail to user
+            subject = 'Admin Registration Approved'
+            body = f'''
+Hi {data['username']},
+
+Your request to become an admin has been approved ✅.
+
+You can now log in using your registered email: {data['email']}.
+
+Thank you and welcome aboard!
+
+Regards,  
+Admin Team
+            '''
+            send_mail(to=data['email'], subject=subject, body=body)
+
+            flash("Admin registered successfully and email sent to the user.")
+        except Exception as e:
+            flash(f"Failed to save admin: {e}")
+    else:
+        flash("Invalid or expired confirmation link.")
+    return '<p style="color: green; font-weight: bold;font-size: 100px; ">Success</p>'
 
 
 
 
+@application.route('/admin_reject/<token>')
+def admin_reject(token):
+    data = pending_admins.pop(token, None)
+    if data:
+        # Send rejection mail to user
+        subject = 'Admin Registration Rejected'
+        body = f'''
+Hi {data['username']},
 
+We regret to inform you that your admin registration request has been ❌ rejected.
 
+If you believe this is a mistake or have any questions, please contact us.
 
+Regards,  
+Admin Team
+        '''
+        send_mail(to=data['email'], subject=subject, body=body)
 
-
+        flash("Admin registration request has been rejected and user notified.")
+    else:
+        flash("Invalid or expired rejection link.")
+    return redirect(url_for('admincreate'))
 
 
 
@@ -56,62 +170,63 @@ def index():
         return render_template('index.html',items_data=items_data)
     return render_template('index.html')
 
-@application.route('/admincreate',methods=['GET','POST'])
-def admincreate():
-    if request.method=='POST':
-        username=request.form['username']
-        useremail=request.form['email']
-        password=request.form['password']
-        address=request.form['address']
-        aggred=request.form['agree']
-        print(request.form)
+# @application.route('/admincreate',methods=['GET','POST'])
+# def admincreate():
+#     if request.method=='POST':
+#         username=request.form['username']
+#         useremail=request.form['email']
+#         password=request.form['password']
+#         address=request.form['address']
+#         aggred=request.form['agree']
+#         print(request.form)
 
-        try:
-            cursor=mydb.cursor(buffered=True)
-            cursor.execute('select count(admin_email) from admin_details where admin_email=%s',[username])
-            email_count=cursor.fetchone()
-        except Exception as e:
-            print(f'actual error is {e}')
-            flash('Could not fetch data Please try again')
-        else:
-            if email_count[0]==0:
-                gotp=genotp()
-                print(gotp)
-                admindata={'username':username,'useremail':useremail,'password':password,'address':address,'agreed':aggred,'genotp':gotp}
-                subject='OTP for Admin Verification'
-                body=f'Use the given otp for admin verify {gotp}'
-                send_mail(to=useremail,subject=subject,body=body)
-                flash(f'OTP has been sent given email {useremail}')
-                return redirect(url_for('otpverify', endata=entoken(admindata)))
-            elif email_count[1]==1:
-                flash(f'email already existed {username}')
-                return redirect(url_for('admincreate'))
-    return render_template('admincreate.html')
+#         try:
+#             cursor=mydb.cursor(buffered=True)
+#             cursor.execute('select count(admin_email) from admin_details where admin_email=%s',[username])
+#             email_count=cursor.fetchone()
+#         except Exception as e:
+#             print(f'actual error is {e}')
+#             flash('Could not fetch data Please try again')
+#         else:
+#             if email_count[0]==0:
+#                 gotp=genotp()
+#                 print(gotp)
+#                 admindata={'username':username,'useremail':useremail,'password':password,'address':address,'agreed':aggred,'genotp':gotp}
+#                 subject='OTP for Admin Verification'
+#                 body=f'Use the given otp for admin verify {gotp}'
+#                 send_mail(to=useremail,subject=subject,body=body)
+#                 flash(f'OTP has been sent given email {useremail}')
+#                 return redirect(url_for('otpverify', endata=entoken(admindata)))
+#             elif email_count[1]==1:
+#                 flash(f'email already existed {username}')
+#                 return redirect(url_for('admincreate'))
+#     return render_template('admincreate.html')
 
-@application.route('/otpverify/<endata>',methods=['GET','POST'])
-def otpverify(endata):
-    if request.method=='POST':
-        userotp=request.form['otp']
-        ddata=detoken(data=endata)
-        hashed=bcrypt.hashpw(ddata['password'].encode(),bcrypt.gensalt())
-        print(hashed)
-        if ddata['genotp']==userotp:
-            try:
-                cursor=mydb.cursor()
-                cursor.execute('insert into admin_details(admin_username,admin_email,admin_password,address)values(%s,%s,%s,%s)',[ddata['username'],ddata['useremail'],hashed,ddata['address']])
-                mydb.commit()
-                cursor.close()
-            except Exception as e:
-                print(f'the error is {e}')
-                flash('unable to store data')
-                return redirect(url_for('admincreate'))
-            else:
-                flash('Admin Registered Successfully.')
-                return redirect(url_for('adminlogin'))
-        else:
-            flash(f'OTP wrong')
+
+# @application.route('/otpverify/<endata>',methods=['GET','POST'])
+# def otpverify(endata):
+#     if request.method=='POST':
+#         userotp=request.form['otp']
+#         ddata=detoken(data=endata)
+#         hashed=bcrypt.hashpw(ddata['password'].encode(),bcrypt.gensalt())
+#         print(hashed)
+#         if ddata['genotp']==userotp:
+#             try:
+#                 cursor=mydb.cursor()
+#                 cursor.execute('insert into admin_details(admin_username,admin_email,admin_password,address)values(%s,%s,%s,%s)',[ddata['username'],ddata['useremail'],hashed,ddata['address']])
+#                 mydb.commit()
+#                 cursor.close()
+#             except Exception as e:
+#                 print(f'the error is {e}')
+#                 flash('unable to store data')
+#                 return redirect(url_for('admincreate'))
+#             else:
+#                 flash('Admin Registered Successfully.')
+#                 return redirect(url_for('adminlogin'))
+#         else:
+#             flash(f'OTP wrong')
        
-    return render_template('adminotp.html')
+#     return render_template('adminotp.html')
 
 
 @application.route('/adminlogin',methods=['GET','POST'])
@@ -213,43 +328,6 @@ def admin_newpassword():
             return redirect(url_for('admin_newpassword'))
 
     return render_template("admin_newpassword.html")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
