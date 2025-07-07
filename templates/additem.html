@@ -2,97 +2,200 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
-    <style>
-        body {
-            background-image: url(https://img.freepik.com/free-photo/futuristic-metaverse-empty-room-product-display-presentation-abstract-technology-scifi-with-neon-light-3d-background_56104-2314.jpg);
-            background-size: cover;
-            background-repeat: no-repeat;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add New Item</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Arial', sans-serif;
+    }
 
-        form {
-            width: 400px;
-            height: auto;
-            border: 1px solid;
-            padding: 2%;
-            border-radius: 8px;
-            margin: 6% 0 0 35%;
-            color: white;
-            background: linear-gradient(rgba(255, 0, 0, 0.507), rgba(131, 186, 111, 0.507));
-        }
+    form {
+      width: 100%;
+      max-width: 450px;
+      padding: 2rem;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      color: #fff;
+      animation: fadeIn 1s ease;
+    }
 
-        input[type="number"] {
-            width: 80px;
-        }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-        input[type='file'] {
-            color: darkred;
-            background-color: rgb(152, 155, 155);
-        }
+    .form-label {
+      color: #00ffff;
+      font-weight: 600;
+    }
 
-        .box {
-            display: flex;
-            justify-content: space-between;
-        }
-    </style>
+    input[type="number"],
+    input[type="text"],
+    textarea,
+    select,
+    input[type="file"] {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid #00ffff;
+      color: #fff;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #ccc;
+    }
+
+    select {
+      color: #fff;
+    }
+
+    .box {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .btn-warning {
+      width: 100%;
+      background: linear-gradient(to right, #00ffff, #ff00ff);
+      border: none;
+      color: #000;
+      font-weight: bold;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-warning:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px #00ffff;
+    }
+
+    center {
+      color: #ffcc00;
+      font-weight: bold;
+    }
+
+    @media (max-width: 576px) {
+      form {
+        padding: 1.5rem;
+      }
+      .box {
+        flex-direction: column;
+      }
+    }
+    .back-button {
+    display: inline-block;
+    padding: 12px 25px;
+    background: linear-gradient(90deg, #00ffff, #ff00ff);
+    color: #000;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 30px;
+    box-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: pulseGlow 2s infinite alternate;
+}
+
+.back-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #00ffff, 0 0 30px #ff00ff;
+}
+
+.back-button:active {
+    transform: scale(0.95);
+}
+
+@keyframes pulseGlow {
+    from {
+        box-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+    }
+    to {
+        box-shadow: 0 0 20px #00ffff, 0 0 40px #ff00ff;
+    }
+}
+.box select {
+  align-self: flex-end;
+}
+select.form-select {
+  box-shadow: 0 0 8px #00ffff;
+}
+
+
+  </style>
 </head>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    {% for message in messages %}
-      <center style="color: bisque;">{{ message }}</center>
-    {% endfor %}  
-  {% endif %}
-{% endwith %}
-<body>
-    <form method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="exampleFormControlInput1" class="form-label">Name</label>
-            <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="Title of the item"
-                name="title" required/>
-        </div>
-        <div class="mb-3">
-            <label for="exampleFormControlTextarea1" class="form-label">Description</label>
-            <textarea class="form-control" id="exampleFormControlTextarea1" placeholder="Discription of the item"
-                name="Discription" rows="5"></textarea>
-        </div>
-        <div class="mb-3 box">
-        <div>
-        <label for="exampleFormControlInput1" class="form-label">Quantity</label>
-        <input type="number" class="form-control" name="quantity" id="exampleFormControlInput1" required />
-        </div>
-        <div>
-        <label for="Price" class="form-label">Price</label>
-        <input type="number" class="form-control" name="price" id="Price" required />
-        </div>
-            <div class="dropdown mt-4">
-                <select name="category" id="Category">
-                    <option value="Home appliances">Home</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Sports">Sports</option>
-                    <option value="Fashion">Fashion</option>
-                    <option value="Grocery">Grocery</option>
-                </select>
-            </div>
-        </div>
-        <div class="mb-3">
-            <label for="formFile" class="form-label"></label>
-            <input class="form-control" type="file" name="file" id="formFile" />
-        </div>
-        <button class="btn btn-warning">Submit</button>
-    </form>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-        crossorigin="anonymous"></script>
-    <script>
-        function category(category) {
-            document.getElementById('selector').textContent = category;
-        }
-    </script>
+<body>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <center>{{ message }}</center>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-control" placeholder="Title of the item" name="title" required />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      <textarea class="form-control" placeholder="Description of the item" name="Discription" rows="5"></textarea>
+    </div>
+
+    <div class="mb-3 box">
+      <div>
+        <label class="form-label">Quantity</label>
+        <input type="number" class="form-control" name="quantity" required />
+      </div>
+      <div>
+        <label class="form-label">Price</label>
+        <input type="number" class="form-control" name="price" required />
+      </div>
+<div class="mt-4 d-inline-block">
+  <select class="form-select" name="category" style="min-width: 140px; ">
+    <option value="Home appliances">Home</option>
+    <option value="Electronics">Electronics</option>
+    <option value="Sports">Sports</option>
+    <option value="Fashion">Fashion</option>
+    <option value="Grocery">Grocery</option>
+  </select>
+</div>
+
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Upload Image</label>
+      <input class="form-control" type="file" name="file" />
+    </div>
+
+    <button class="btn btn-warning">Submit</button>
+    <div class="text-center my-4">
+    <a href="{{ url_for('adminpanel') }}" class="back-button">⬅ Back to Admin Panel</a>
+</div>
+
+  </form>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
 </body>
 
 </html>

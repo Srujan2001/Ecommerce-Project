@@ -31,6 +31,7 @@ def admincreate():
         username = request.form['username']
         useremail = request.form['email']
         raw_password = request.form['password']
+        phone = request.form['phone']
         address = request.form['address']
         agreed = request.form.get('agree')
 
@@ -52,6 +53,7 @@ def admincreate():
                 'username': username,
                 'email': useremail,
                 'password': hashed_password,  # Store as bytes for VARBINARY
+                'phone': phone,
                 'address': address
             }
             pending_admins[token] = admindata
@@ -67,6 +69,7 @@ A new admin registration request has been submitted.
 
 Name: {username}
 Email: {useremail}
+Phone: {phone}
 Address: {address}
 
 Click to APPROVE: ✅ {confirm_url}
@@ -89,8 +92,8 @@ def admin_confirm(token):
         try:
             cursor = mydb.cursor()
             cursor.execute(
-                "INSERT INTO admin_details (admin_username, admin_email, admin_password, address) VALUES (%s, %s, %s, %s)",
-                [data['username'], data['email'], data['password'], data['address']]
+                "INSERT INTO admin_details (admin_username, admin_email, admin_password, address, phone) VALUES (%s, %s, %s, %s, %s)",
+                [data['username'], data['email'], data['password'], data['address'], data['phone']]
             )
             mydb.commit()
 
@@ -102,6 +105,7 @@ Hi {data['username']},
 Your request to become an admin has been approved ✅.
 
 You can now log in using your registered email: {data['email']}.
+Phone: {data['phone']}
 
 Thank you and welcome aboard!
 
@@ -116,8 +120,6 @@ Admin Team
     else:
         flash("Invalid or expired confirmation link.")
     return '<p style="color: green; font-weight: bold;font-size: 100px; ">Success</p>'
-
-
 
 
 @application.route('/admin_reject/<token>')
@@ -142,6 +144,7 @@ Admin Team
     else:
         flash("Invalid or expired rejection link.")
     return redirect(url_for('admincreate'))
+
 
 
 
@@ -365,6 +368,42 @@ def additem():
             flash(f'{item_name[:20]}. add sucessfully')
             return redirect(url_for('adminpanel'))
     return render_template('additem.html')
+
+
+@application.route('/updateprofile', methods=['GET', 'POST'])
+def update_profile():
+    admin_email = session.get('admin')  # Correct key from session
+    if not admin_email:
+        flash("Please login first.")
+        return redirect(url_for('adminlogin'))
+
+    cursor = mydb.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        username = request.form['adminname']
+        address = request.form['address']
+        phone = request.form['phone']  # ✅ Fetch phone from form
+
+        update_query = "UPDATE admin_details SET admin_username=%s, address=%s, phone=%s WHERE admin_email=%s"
+        cursor.execute(update_query, (username, address, phone, admin_email))  # ✅ Include phone in query
+        mydb.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('adminpanel'))
+
+    # Fetch current admin details
+    cursor.execute("SELECT * FROM admin_details WHERE admin_email=%s", (admin_email,))
+    profile = cursor.fetchone()
+
+    return render_template('admin_update_profile.html', profile=profile)
+
+
+
+
+
+
+
+
+
 
 @application.route('/viewitems')
 def viewitems():

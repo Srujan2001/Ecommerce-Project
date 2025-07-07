@@ -138,6 +138,9 @@
   {% endfor %}
   {% endif %}
   {% endwith %}
+  <a href="{{ url_for('index') }}" style="text-decoration: none;">
+                <button style="background-color: #ffc107;border: none;color: #212529; margin-left:2%; margin-top: 2%; padding: 8px 144px;font-size: 1rem;border-radius: 4px;cursor: pointer;transition: background-color 0.3s ease;"onmouseover="this.style.backgroundColor='#e0a800'"onmouseout="this.style.backgroundColor='#ffc107'">Back
+                </button>
 
   <section class="sec1">
     <div class="container">
@@ -171,9 +174,6 @@
                   </a>
                 </div>
               </form>
-              <a href="{{ url_for('index') }}" style="text-decoration: none;">
-                <button style="background-color: #ffc107;border: none;color: #212529;margin-top: 2%; padding: 8px 144px;font-size: 1rem;border-radius: 4px;cursor: pointer;transition: background-color 0.3s ease;"onmouseover="this.style.backgroundColor='#e0a800'"onmouseout="this.style.backgroundColor='#ffc107'">Back
-                </button>
               </a>
             </div>
           </div>
